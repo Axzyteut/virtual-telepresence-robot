@@ -1,1 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Telepresence Robot Control</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+    #status { font-size: 18px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Virtual Telepresence Robot</h1>
+  <h2>Control Panel</h2>
+  <button onclick="sendCommand('MOVE_FORWARD')">Move Forward</button>
+  <button onclick="sendCommand('MOVE_BACKWARD')">Move Backward</button>
+  <button onclick="sendCommand('TURN_LEFT')">Turn Left</button>
+  <button onclick="sendCommand('TURN_RIGHT')">Turn Right</button>
+  <button onclick="sendCommand('STOP')">Stop</button>
+
+  <h2>Status</h2>
+  <div id="status">Waiting for commands...</div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    // MQTT Setup
+    const client = mqtt.connect("wss://broker.hivemq.com:8000/mqtt");
+    const commandTopic = "robot/commands";
+    const responseTopic = "robot/responses";
+
+    client.on("connect", () => {
+      console.log("Connected to MQTT Broker");
+      client.subscribe(responseTopic);
+    });
+
+    client.on("message", (topic, message) => {
+      if (topic === responseTopic) {
+        const response = message.toString();
+        document.getElementById("status").innerText = `Response: ${response}`;
+        console.log(response);
+      }
+    });
+
+    // Send commands to simulate Raspberry Pi
+    function sendCommand(command) {
+      console.log(`Sending command: ${command}`);
+      client.publish(commandTopic, command);
+      document.getElementById("status").innerText = `Sending command: ${command}`;
+    }
+  </script>
+</body>
+</html>
 
